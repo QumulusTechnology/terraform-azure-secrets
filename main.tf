@@ -1,10 +1,22 @@
-resource "azurerm_key_vault" "vault" {
+data "azurerm_client_config" "current" {}
+
+data "azurerm_resource_group" "this" {
+  name = var.resource_group
+}
+
+data "azurerm_key_vault" "this" {
+  count               = var.create_key_vault ? 0 : 1
+  name                = var.name
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+resource "azurerm_key_vault" "this" {
+  count                           = var.create_key_vault ? 1 : 0
   name                            = var.name
-  resource_group_name             = var.resource_group_name
-  location                        = var.location
+  resource_group_name             = data.azurerm_resource_group.this.name
+  location                        = var.location == null ? data.azurerm_resource_group.this.location : var.location
   sku_name                        = lower(var.sku_name)
-  tenant_id                       = var.tenant_id
-  soft_delete_enabled             = true
+  tenant_id                       = var.tenant_id == null ? data.azurerm_client_config.current.tenant_id : var.tenant_id
   soft_delete_retention_days      = var.soft_delete_retention_days
   purge_protection_enabled        = var.purge_protection_enabled
   enabled_for_deployment          = var.enabled_for_deployment
@@ -15,8 +27,8 @@ resource "azurerm_key_vault" "vault" {
   dynamic "access_policy" {
     for_each = var.access_policies
     content {
-      tenant_id               = var.tenant_id
-      object_id               = access_policy.value.object_id
+      tenant_id               = lookup(access_policy.value, "tenant_id", data.azurerm_client_config.current.tenant_id)
+      object_id               = lookup(access_policy.value, "object_id", data.azurerm_client_config.current.object_id)
       application_id          = lookup(access_policy.value, "application_id", null)
       key_permissions         = lookup(access_policy.value, "key_permissions", "") == "" ? null : split(",", access_policy.value.key_permissions)
       secret_permissions      = lookup(access_policy.value, "secret_permissions", "") == "" ? null : split(",", access_policy.value.secret_permissions)
@@ -39,7 +51,7 @@ resource "azurerm_key_vault" "vault" {
 
 resource "azurerm_key_vault_key" "vault" {
   for_each        = { for key in var.keys : key.name => key }
-  key_vault_id    = azurerm_key_vault.vault.id
+  key_vault_id    = var.create_key_vault ? azurerm_key_vault.this[0].id : data.azurerm_key_vault.this[0].id
   name            = each.value.name
   key_type        = each.value.key_type
   key_size        = lookup(each.value, "key_size", null)
@@ -51,7 +63,7 @@ resource "azurerm_key_vault_key" "vault" {
 
 resource "azurerm_key_vault_secret" "vault" {
   for_each        = { for secret in var.secrets : secret.name => secret }
-  key_vault_id    = azurerm_key_vault.vault.id
+  key_vault_id    = var.create_key_vault ? azurerm_key_vault.this[0].id : data.azurerm_key_vault.this[0].id
   name            = each.value.name
   value           = each.value.value
   content_type    = lookup(each.value, "content_type", null)

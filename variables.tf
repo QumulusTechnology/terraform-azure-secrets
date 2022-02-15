@@ -1,22 +1,31 @@
+variable "create_key_vault" {
+  description = "Create Key Vault"
+  type        = bool
+  default     = false
+}
+
 variable "name" {
   type        = string
   description = "Specifies the name of the Key Vault. Changing this forces a new resource to be created."
 }
-variable "resource_group_name" {
+variable "resource_group" {
   type        = string
   description = "The name of the resource group in which to create the Key Vault. Changing this forces a new resource to be created."
 }
 variable "location" {
   type        = string
   description = "The location/region where the Key Vault is created."
+  default     = null
 }
 variable "sku_name" {
   type        = string
   description = "The Name of the SKU used for this Key Vault. Possible values are standard and premium."
+  default     = "standard"
 }
 variable "tenant_id" {
   type        = string
   description = "The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault."
+  default     = null
 }
 variable "soft_delete_retention_days" {
   type        = number

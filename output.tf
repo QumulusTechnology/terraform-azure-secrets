@@ -1,36 +1,48 @@
 output "id" {
-  value       = azurerm_key_vault.vault.id
-  description = "The virtual network configuration ID."
+  description = "The ID of the Key Vault"
+  value       = var.create_key_vault ? azurerm_key_vault.this[0].id : data.azurerm_key_vault.this[0].id
 }
+
 output "name" {
-  value       = azurerm_key_vault.vault.name
-  description = "The name of the virtual network."
+  description = "The name of the Key Vault"
+  value       = var.create_key_vault ? azurerm_key_vault.this[0].name : data.azurerm_key_vault.this[0].name
 }
-output "resource_group_name" {
-  value       = azurerm_key_vault.vault.resource_group_name
-  description = "The name of the resource group in which to create the virtual network."
+
+output "tenant_id" {
+  description = "The name of the Key Vault"
+  value        = var.create_key_vault ? azurerm_key_vault.this[0].tenant_id : data.azurerm_key_vault.this[0].tenant_id
 }
+
+output "uri" {
+  description = "The URI of the Key Vault, used for performing operations on keys and secrets"
+  value       = var.create_key_vault ? azurerm_key_vault.this[0].vault_uri : data.azurerm_key_vault.this[0].vault_uri
+}
+output "resource_group" {
+  description = "The resource group of the Key Vault"
+  value       = data.azurerm_resource_group.this.name
+}
+
 output "location" {
-  value       = azurerm_key_vault.vault.location
-  description = "The location/region where the virtual network is created."
+  value       = var.create_key_vault ? azurerm_key_vault.this[0].location : data.azurerm_key_vault.this[0].location
+  description = "The location/region where the key vault is created."
 }
 output "access_policies" {
-  value       = azurerm_key_vault.vault.access_policy
+  value       = azurerm_key_vault.this[0].access_policy
   description = "Blocks containing configuration of each access policy."
 }
 output "keys" {
-  value       = azurerm_key_vault.vault.access_policy
+  value       = azurerm_key_vault.this[0].access_policy
   description = "Blocks containing configuration of each key."
 }
 output "secrets" {
-  value       = azurerm_key_vault.vault.access_policy
+  value       = azurerm_key_vault.this[0].access_policy
   description = "Blocks containing configuration of each secret."
 }
 output "contacts" {
-  value       = azurerm_key_vault.vault.contact
+  value       = azurerm_key_vault.this[0].contact
   description = "Blocks containing each contact."
 }
 output "tags" {
-  value       = azurerm_key_vault.vault.tags
+  value       = azurerm_key_vault.this[0].tags
   description = "The tags assigned to the resource."
 }
